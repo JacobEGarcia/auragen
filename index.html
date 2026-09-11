@@ -1,0 +1,59 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Auragen - Aura Generator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{margin:0;min-height:100vh;background:#0e0a16;color:#e2d8f5;font-family:ui-monospace,Menlo,monospace;display:flex;flex-direction:column;align-items:center;padding:28px 16px}
+h1{letter-spacing:.45em;font-size:26px;margin:0;color:#c9a0ff}
+.tag{color:#71648c;letter-spacing:.25em;font-size:11px;margin:8px 0 14px}
+.orb{width:170px;height:170px;border-radius:50%;margin:14px 0;transition:all 1s;background:radial-gradient(circle at 35% 35%,#3d2a5e,#1a1230);box-shadow:0 0 60px #3d2a5e66}
+.orb.live{animation:breathe 3.2s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.hud{color:#71648c;font-size:12px;letter-spacing:.12em;margin:8px 0 16px}
+.hud b{color:#c9a0ff}
+input{background:#150f22;border:1px solid #35284e;color:#e2d8f5;border-radius:8px;padding:10px 12px;width:300px;font-family:inherit;font-size:13px;text-align:center}
+.moods{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;width:340px;margin:12px 0}
+.mood{background:#150f22;border:1px solid #35284e;color:#b79ae0;border-radius:99px;padding:7px 13px;font-family:inherit;font-size:11px;letter-spacing:.1em;cursor:pointer}
+.mood.sel{background:#c9a0ff;color:#0e0a16}
+button{background:#1a1229;border:1px solid #453065;color:#d3b8ff;border-radius:8px;padding:10px 22px;font-family:inherit;letter-spacing:.2em;font-size:12px;cursor:pointer;margin-top:6px}
+button:hover{background:#c9a0ff;color:#0e0a16}
+.reading{background:#150f22;border:1px solid #35284e;border-left:3px solid #c9a0ff;border-radius:8px;padding:16px;width:330px;margin-top:16px;display:none}
+.reading .an{color:#e8dbff;font-size:17px;letter-spacing:.2em}
+.reading .ar{color:#a793c4;font-size:12px;line-height:1.6;margin-top:8px;font-style:italic}
+.hist{color:#71648c;font-size:10px;letter-spacing:.15em;margin-top:14px}
+</style></head><body>
+<h1>AURAGEN</h1><div class="tag">MAKE UR OWN AURA · SCIENCE(ISH)</div>
+<div class="orb" id="orb"></div>
+<div class="hud">AURAS CRAFTED <b id="sA">0</b></div>
+<input id="nm" placeholder="your name (the aura needs to know)" maxlength="20">
+<div class="moods" id="moods"></div>
+<button onclick="gen()">GENERATE MY AURA</button>
+<div class="reading" id="reading"></div>
+<div class="hist" id="hist"></div>
+<script>
+const MOODS=['calm','wired','sleepy','feral','hopeful','gremlin','focused','mysterious'];
+const C1={calm:'#7ec8ff',wired:'#ffe066',sleepy:'#9d8cff',feral:'#ff7e5f',hopeful:'#8dffb0',gremlin:'#b0ff5f',focused:'#5ff2ff',mysterious:'#c9a0ff'};
+const C2={calm:'#2b5b8c',wired:'#8c5f2b',sleepy:'#3a2f6e',feral:'#8c2b3a',hopeful:'#2b8c55',gremlin:'#4a8c2b',focused:'#2b7a8c',mysterious:'#4a2b6e'};
+const ADJ={calm:'Low Tide',wired:'Static',sleepy:'Velvet',feral:'Wildfire',hopeful:'First Light',gremlin:'Moss',focused:'Laser',mysterious:'Fog'};
+const NOUN=['Static','Signal','Weather','Honey','Voltage','Marble','Pollen','Mercury'];
+const LINES=['people feel it when you walk in, they just cannot name it.','it hums at a frequency only dogs and old friends notice.','it is strongest right before you laugh.','it recharges in grocery store aisles at night.','it once fixed a vending machine by standing near it.','strangers tell you things. this is why.','it pairs well with loud music and open windows.','it has been described as "a lot, but fondly".'];
+let D=JSON.parse(localStorage.getItem('auragen')||'{"count":0,"names":[]}');let sel='calm';
+const mc=document.getElementById('moods');
+mc.innerHTML=MOODS.map(m=>`<span class="mood${m===sel?' sel':''}" data-m="${m}">${m}</span>`).join('');
+mc.onclick=e=>{const m=e.target.dataset&&e.target.dataset.m;if(!m)return;sel=m;
+[...mc.children].forEach(c=>c.classList.toggle('sel',c.dataset.m===m));};
+function hash(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h;}
+function gen(){const nm=document.getElementById('nm').value.trim()||'nameless one';
+const h=hash(nm+sel+Date.now().toString(36).slice(-3));
+const c1=C1[sel],c2=C2[sel];
+const orb=document.getElementById('orb');
+orb.style.background=`radial-gradient(circle at 35% 35%, ${c1}, ${c2} 70%)`;
+orb.style.boxShadow=`0 0 80px ${c1}88, 0 0 140px ${c2}55`;
+orb.classList.add('live');
+const an=ADJ[sel]+' '+NOUN[h%NOUN.length];
+const r=document.getElementById('reading');r.style.display='block';
+r.innerHTML=`<div class="an">${an.toUpperCase()}</div><div class="ar">${nm}, your aura reads ${an.toLowerCase()} — ${LINES[h%LINES.length]}</div>`;
+D.count++;D.names.unshift(an);D.names=D.names.slice(0,6);
+document.getElementById('sA').textContent=D.count;
+document.getElementById('hist').textContent=D.names.length?'PREVIOUSLY: '+D.names.join(' · ').toUpperCase():'';
+localStorage.setItem('auragen',JSON.stringify(D));}
+document.getElementById('sA').textContent=D.count;
+</script></body></html>
